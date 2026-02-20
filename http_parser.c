@@ -35,7 +35,6 @@ int tokenizer(char *request_str, request_s *reqstr){
 
 
     //Getting the remeaining lines
-    
     char *headers[] = {"HOST", "USER-AGENT", "ACCEPT"};
 
     int cmp = 1;
@@ -73,37 +72,6 @@ int tokenizer(char *request_str, request_s *reqstr){
         cmp = strncmp(rem_buff, "\r\n", 2);
     }
 
-/*
-    //Getting the method
-    space = strchr(rem_buff, 32);
-    *space = 0;
-    reqstr->method = rem_buff;
-    rem_buff = space + 1;
-    Getting the path
-    space = strchr(rem_buff, 32);
-    *space = 0;
-    reqstr->path = rem_buff;
-    rem_buff = space + 1;
-    //Getting the protocol
-    rnrn = strchr(rem_buff, 13);
-    *rnrn = 0;
-    reqstr->proto = rem_buff;
-    rem_buff = strchr(rnrn + 1, 32) + 1;
-    //Getting the hostname header
-    rnrn = strchr(rem_buff, 13);
-    *rnrn = 0;
-    reqstr->headers.host = rem_buff;
-    rem_buff = strchr(rnrn + 1, 32) + 1;
-    //Getting the user agent
-    rnrn = strchr(rem_buff, 13);
-    *rnrn = 0;
-    reqstr->headers.user_agent = rem_buff;
-    rem_buff = strchr(rnrn + 1, 32) + 1;
-    //Gettting the content type
-    rnrn = strchr(rem_buff, 13);
-    *rnrn = 0;
-    reqstr->headers.accept = rem_buff;
-*/
 
 }
 

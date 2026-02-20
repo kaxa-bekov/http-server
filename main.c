@@ -72,27 +72,7 @@ int main(){
 
         printf("Read %d bytes.\nContent:\n%s\n", read_bytes, buff);
        
-        //Disect the request in to headers and further in to Method, Path, and other Headers.
-        //char *rem_buff = buff;
-        //char *space = strchr(rem_buff, 32);
-        //printf("\nThe address of the first byte in the request ('G') is %p.\nThe address of the first space (' ') character (32) is %p.\n", buff, space);
-        //*space = 0;
-        //char *method = rem_buff;
-        //rem_buff = space + 1;
-        //printf("Method is %s\nThe remaining request is\n%s\n", method, rem_buff);
-        //space = strchr(rem_buff, 32);
-        //*space = 0;
-        //char *path = rem_buff;
-        //rem_buff = space + 1;
-        //printf("Path is %s\nThe remaining request is\n%s\n", path, rem_buff);
-        //space = strchr(rem_buff, 32);
-        //*space = 0;
-        //char *proto = rem_buff;
-        //rem_buff = space + 1;
-        //printf("Protocol is %s\nThe remaining request is\n%s\n", proto, rem_buff);
-        
-        //Using a custom header file to disect the request
-        
+        //Calling parsing function 
         tokenizer(buff, &rq_s);
 
         printf("Tokenizator output:\nMethod: %s\nPath: %s\nProtocol: %s\nHost: %s\nUser-Agent: %s\nAccept: %s\n\n\n", rq_s.method, rq_s.path, rq_s.proto, rq_s.headers.host, rq_s.headers.user_agent, rq_s.headers.accept);
