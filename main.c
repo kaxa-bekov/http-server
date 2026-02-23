@@ -64,12 +64,12 @@ int main(){
 
         //Reading a request
         ssize_t read_bytes = read(conn_fd, buff, BUFFER_SIZE);
-        
+       
         if(read_bytes < 0){
             perror("Read Failure!\n");
             return 1;
         }
-
+        buff[read_bytes] = '\0';
         printf("Read %d bytes.\nContent:\n%s\n", read_bytes, buff);
        
         //Calling parsing function 
@@ -97,8 +97,10 @@ int main(){
         }
 
         printf("Wrote %d bytes.\nContent:\n%s", write_bytes, resp_buff);
-
-        //Close the socket
+    
+        //Nullifying the request struct
+        str_nullifier(&rq_s);
+        //Close the socket and free the request buffer
         close(conn_fd);
     }
 

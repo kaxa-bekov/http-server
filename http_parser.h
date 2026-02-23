@@ -19,4 +19,8 @@ typedef struct {
 
 int tokenizer(char *request_string, request_s *reqstr);
 
+void str_nullifier(request_s *req_s);
+
+void disect_heads(char* rm_bf, request_s* req_s);
+
 #endif ///HTTP_PARSER_H included
