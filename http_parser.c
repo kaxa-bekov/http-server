@@ -48,12 +48,9 @@ int tokenizer(char *request_str, request_s *reqstr){
 
 
     //Getting the remeaining lines
-
-    int cmp = 1;
-    
-    while(cmp != 0){
+    while(true){
         rnrn = strchr(rem_buff, '\n');
-        if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL in first search for an '\\n' of the headers\n"); return 1;}
+        if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL search for an '\\n' of the headers\n"); return 1;}
         if(rnrn > rem_buff){
             if(*(rnrn - 1) != '\r'){  
                 *rnrn = 0;
@@ -61,15 +58,13 @@ int tokenizer(char *request_str, request_s *reqstr){
                 *(rnrn - 1), *rnrn = 0;            
             }
         }
-        if(strlen(rem_buff) == 0 || *rem_buff == '\r'){
-            printf("Hit the empty line in the request! Exiting...\n");
-            cmp = 0;
-        }
-
         //Populating the headers struct portion
         disect_heads(rem_buff, reqstr);
         rem_buff = ++rnrn;
-        cmp = strncmp(rem_buff, "\r\n", 2);
+        if(strncmp(rem_buff, "\r\n", 2) == 0 || strncmp(rem_buff, "\n\n", 2) == 0){
+            printf("Exiting the while loop slicing the headers lines. Comparison returned 0!\nComparing to '\\r\\n': %d\nComparing to '\\n\\n': %d\n",  strncmp(rem_buff, "\r\n",2), strncmp(rem_buff, "\n\n",2));
+            break;
+        }
     }
 }
 
@@ -87,7 +82,7 @@ void str_nullifier(request_s *req_s){
 
 void disect_heads(char* rm_bf, request_s* req_s){
     
-    char *headers[] = {"host", "user-agent", "accept"};
+    char *headers[] = {"host", "user-agent", "accept "};
     char *delim;
     int head_cmp;
     int i = 0;
@@ -95,6 +90,9 @@ void disect_heads(char* rm_bf, request_s* req_s){
     delim = strchr(rm_bf, ':');
     if(delim == NULL){fprintf(stderr, "Character look up returned NULL in search  for a delimiter of the headers\n"); return;}
     *delim = 0;
+    
+    //...remove whitespaces from from rm_bf at this point 
+    
     while(*(delim + 1) == ' ') {delim++;}
 
     for(i = 0;i < 3;i++) {
@@ -115,8 +113,6 @@ void disect_heads(char* rm_bf, request_s* req_s){
             }
         }
     }
-
-
 }
 
 
