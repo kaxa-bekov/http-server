@@ -23,4 +23,6 @@ void str_nullifier(request_s *req_s);
 
 void disect_heads(char* rm_bf, request_s* req_s);
 
+void remove_spaces(char *buff);
+
 #endif ///HTTP_PARSER_H included

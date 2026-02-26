@@ -82,7 +82,7 @@ void str_nullifier(request_s *req_s){
 
 void disect_heads(char* rm_bf, request_s* req_s){
     
-    char *headers[] = {"host", "user-agent", "accept "};
+    char *headers[] = {"host", "user-agent", "accept"};
     char *delim;
     int head_cmp;
     int i = 0;
@@ -90,10 +90,9 @@ void disect_heads(char* rm_bf, request_s* req_s){
     delim = strchr(rm_bf, ':');
     if(delim == NULL){fprintf(stderr, "Character look up returned NULL in search  for a delimiter of the headers\n"); return;}
     *delim = 0;
-    
-    //...remove whitespaces from from rm_bf at this point 
-    
     while(*(delim + 1) == ' ') {delim++;}
+    
+    remove_spaces(rm_bf);
 
     for(i = 0;i < 3;i++) {
         head_cmp = strncasecmp(rm_bf, headers[i], 15);
@@ -115,7 +114,22 @@ void disect_heads(char* rm_bf, request_s* req_s){
     }
 }
 
+void remove_spaces(char *buff){
+    
+    printf("remove_spaces input: %s\n", buff);
+    char *read = buff, *write = buff;
 
+    while(*write){
+        if(*read != ' '){
+            *write++ = *read;
+        }
+        read++;
+    }
+    *write = '\0';
+
+    printf("remove_spaces output: %s\n", buff);
+    
+}
 
 
 
