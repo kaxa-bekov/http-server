@@ -11,10 +11,13 @@ int tokenizer(char *request_str, request_s *reqstr){
     char *rnrn;                     //New Line characters and an empty line check
     char *space;                    //Space
     char *delim;                    //Colon delimiter
-
-    
-   
-
+    char *empty_line;               //The empty line terminating the request
+                                    
+    //Finding the empty line
+    empty_line = strstr(rem_buff, "\r\n\r\n");
+    if(!empty_line) { empty_line = strstr(rem_buff, "\n\n"); }
+    if(!empty_line || (strlen(empty_line) > 4)) { fprintf(stderr, "Missing or malformed empty line. Exiting!\n"); return 1; }
+    printf("Empty Line qaqa%sqaqa\n", empty_line);
     //Getting the first line (request line)
     char *req_line = rem_buff;   
     rnrn = strchr(rem_buff, '\n');
@@ -29,7 +32,6 @@ int tokenizer(char *request_str, request_s *reqstr){
     }
     
     printf("Request Line: %s\n", req_line);
-    printf("rem_buff beginning test. %c\n", *rem_buff);
 
     //Disecting the request line
     space = strchr(req_line, ' ');
@@ -45,27 +47,45 @@ int tokenizer(char *request_str, request_s *reqstr){
     reqstr->path = req_line;
     req_line = ++space;
     reqstr->proto = req_line;
+    if(strchr(req_line, ' ') != NULL) {fprintf(stderr, "Something went wrong, found too many spaces in the request line!\n");}
 
 
+
+
+    //TODO fix it so that this loop doesnt exit prematurely when hitting the last line.
     //Getting the remeaining lines
-    while(true){
+    while(true)
+    {
+        printf("rem_buff address: %p , data: test-%s-test\n", rem_buff, rem_buff);
+        printf("empty_line address: %p , data: test-%s-test\n", empty_line, empty_line);
+
         rnrn = strchr(rem_buff, '\n');
-        if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL search for an '\\n' of the headers\n"); return 1;}
+        if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL search for an '\\n' of the headers. (rem_buff:%s) \n", rem_buff); return 1;} //Fires when there is no newline char (LF or CRLF)
+                                                                                                                             //
         if(rnrn > rem_buff){
             if(*(rnrn - 1) != '\r'){  
                 *rnrn = 0;
             }else{
                 *(rnrn - 1), *rnrn = 0;            
             }
-        }
+        }       
+
         //Populating the headers struct portion
         disect_heads(rem_buff, reqstr);
+
+
+        if((rnrn + 1) >= empty_line) {break;}
+
         rem_buff = ++rnrn;
-        if(strncmp(rem_buff, "\r\n", 2) == 0 || strncmp(rem_buff, "\n\n", 2) == 0){
-            printf("Exiting the while loop slicing the headers lines. Comparison returned 0!\nComparing to '\\r\\n': %d\nComparing to '\\n\\n': %d\n",  strncmp(rem_buff, "\r\n",2), strncmp(rem_buff, "\n\n",2));
-            break;
-        }
+
+
     }
+
+
+
+
+    return 0;
+    //End of Tokenizer
 }
 
 //struct nullifier  helper function definition
@@ -88,7 +108,7 @@ void disect_heads(char* rm_bf, request_s* req_s){
     int i = 0;
 
     delim = strchr(rm_bf, ':');
-    if(delim == NULL){fprintf(stderr, "Character look up returned NULL in search  for a delimiter of the headers\n"); return;}
+    if(delim == NULL){fprintf(stderr, "Character look up returned NULL in search  for a delimiter of the headers. (rem_buff:%s) \n", rm_bf); return;}
     *delim = 0;
     while(*(delim + 1) == ' ') {delim++;}
     
@@ -132,10 +152,4 @@ void remove_spaces(char *buff){
 }
 
 
-
-
-
-
-
-
-
+ 
