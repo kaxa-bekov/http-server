@@ -6,14 +6,17 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
+
 #include "http_parser.h"
 
 #define PORT 2323
 #define BUFFER_SIZE 1024
 
-request_s rq_s;
+request_s request_struct;
+server_init_s init_struct;
 
 int main(){
+
     char buff[BUFFER_SIZE];
 
     char resp_buff[] = "HTTP/1.0 200 OK\r\n"
@@ -51,38 +54,30 @@ int main(){
 
     //socklen_t addr_len = sizeof(addr);
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     while(true){
 
         printf("------------------------------Waiting for new connection--------------------------\n\n");    
         
         int conn_fd = accept(s_socket_fd, (struct sockaddr *)&addr, &addrlen);
 
-        if(conn_fd < 0){
-            perror("Accept Failed!\n");
-            return 1;
-        }
+        if(conn_fd < 0){ perror("Accept Failed!\n"); return 1;}
 
         //Reading a request
         ssize_t read_bytes = read(conn_fd, buff, BUFFER_SIZE);
        
-        if(read_bytes < 0){
-            perror("Read Failure!\n");
-            return 1;
-        }
+        if(read_bytes < 0){ perror("Read Failure!\n"); return 1;}
+
         buff[read_bytes] = '\0';
         printf("Read %d bytes.\nContent:\n%s\n", read_bytes, buff);
        
         //Calling parsing function 
-        tokenizer(buff, &rq_s);
+        tokenizer(buff, &request_struct);
 
-        printf("Tokenizator output:\nMethod: %s\nPath: %s\nProtocol: %s\nHost: %s\nUser-Agent: %s\nAccept: %s\n\n\n", rq_s.method, rq_s.path, rq_s.proto, rq_s.headers.host, rq_s.headers.user_agent, rq_s.headers.accept);
+        printf("\nTokenizator output:\nMethod: %s\nPath: %s\nProtocol: %s\nHost: %s\nUser-Agent: %s\nAccept: %s\n\n\n", request_struct.method, request_struct.path, request_struct.proto, request_struct.headers.host, request_struct.headers.user_agent, request_struct.headers.accept);
 
-
-        //Getting the connected host information
-        int sockname_result = getsockname(conn_fd, (struct sockaddr *)&addr, &addrlen);
-        
-        if(sockname_result < 0){perror("getsockname Failed!\n");return 1;}
-
+        //Getting connection information
         char *host_ip = inet_ntoa(addr.sin_addr);
         unsigned int host_port = ntohs(addr.sin_port);
 
@@ -91,15 +86,13 @@ int main(){
         //Writing a response
         ssize_t write_bytes = write(conn_fd, resp_buff, write_size);
         
-        if(write_bytes < 0){
-            perror("Write Failed!");
-            return 1;
-        }
+        if(write_bytes < 0){perror("Write Failed!");return 1;}
 
         printf("Wrote %d bytes.\nContent:\n%s", write_bytes, resp_buff);
     
         //Nullifying the request struct
-        str_nullifier(&rq_s);
+        str_nullifier(&request_struct);
+
         //Close the socket and free the request buffer
         close(conn_fd);
     }

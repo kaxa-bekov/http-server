@@ -56,8 +56,6 @@ int tokenizer(char *request_str, request_s *reqstr){
     //Getting the remeaining lines
     while(true)
     {
-        printf("rem_buff address: %p , data: test-%s-test\n", rem_buff, rem_buff);
-        printf("empty_line address: %p , data: test-%s-test\n", empty_line, empty_line);
 
         rnrn = strchr(rem_buff, '\n');
         if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL search for an '\\n' of the headers. (rem_buff:%s) \n", rem_buff); return 1;} //Fires when there is no newline char (LF or CRLF)
