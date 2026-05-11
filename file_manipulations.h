@@ -6,4 +6,4 @@
 
 
 
-#endif FILE_MANIPULATIONS_H
+#endif //FILE_MANIPULATIONS_H included

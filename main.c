@@ -8,7 +8,8 @@
 #include <string.h>
 
 #include "http_parser.h"
-
+#include "http_init_tcp.h"
+#include "file_manipulations.h"
 #define PORT 2323
 #define BUFFER_SIZE 1024
 
@@ -26,41 +27,23 @@ int main(){
 
     size_t write_size = strlen(resp_buff);
 
-
-    int s_socket_fd = socket(AF_INET, SOCK_STREAM, 0); //creating a socket fd
-
-    if(s_socket_fd < 0){perror("Socket was NOT created!");return 1;}
+    //Initializing a TCP server
+    init_server(&init_struct);
     
-    printf("Socket successfully created!\n");
+    int server_fd = init_struct.server_socket_fd;
+    struct sockaddr_in server_struct_address = init_struct.sockaddr_in_address;
+    socklen_t server_address_len = init_struct.server_address_length;
 
-    struct sockaddr_in addr; //creating an address structure and initializing the members.
-    addr.sin_family = AF_INET; //Internet Address family
-    addr.sin_port = htons(PORT); //Port number converted to Network Byte Order format
-    addr.sin_addr.s_addr = INADDR_ANY; //Setting the actual IP of the socket to ANY (0.0.0.0)
-
-    socklen_t addrlen = sizeof addr; 
-    
-    int bind_result = bind(s_socket_fd,(struct sockaddr *)&addr, addrlen);  //Binding the sockaddr_in structure to our socket (s_socket_fd)
-
-    if(bind_result < 0){perror("Bind Failed!");return 1;}
-
-    printf("Socket successfully bound to address!\n");
-
-    int listen_result = listen(s_socket_fd, 10);
-
-    if(listen_result < 0){perror("Listen Failed!");return 1;}
-
-    printf("Server is listening...\n");
-
-    //socklen_t addr_len = sizeof(addr);
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------\\
 
     while(true){
 
         printf("------------------------------Waiting for new connection--------------------------\n\n");    
+
+        struct sockaddr_in client_address;
+        socklen_t client_addr_len = sizeof client_address;
         
-        int conn_fd = accept(s_socket_fd, (struct sockaddr *)&addr, &addrlen);
+        int conn_fd = accept(server_fd, (struct sockaddr *)&client_address, &client_addr_len);
 
         if(conn_fd < 0){ perror("Accept Failed!\n"); return 1;}
 
@@ -78,8 +61,8 @@ int main(){
         printf("\nTokenizator output:\nMethod: %s\nPath: %s\nProtocol: %s\nHost: %s\nUser-Agent: %s\nAccept: %s\n\n\n", request_struct.method, request_struct.path, request_struct.proto, request_struct.headers.host, request_struct.headers.user_agent, request_struct.headers.accept);
 
         //Getting connection information
-        char *host_ip = inet_ntoa(addr.sin_addr);
-        unsigned int host_port = ntohs(addr.sin_port);
+        char *host_ip = inet_ntoa(client_address.sin_addr);
+        unsigned int host_port = ntohs(client_address.sin_port);
 
         printf("Connected to host %s on port %u\n", host_ip, host_port);
 
@@ -97,6 +80,6 @@ int main(){
         close(conn_fd);
     }
 
-    close(s_socket_fd);
+    close(server_fd);
     return 0;
 }

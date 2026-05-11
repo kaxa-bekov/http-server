@@ -9,7 +9,7 @@
 
 int validate_file(char *filename, int con_fd){
 
-    if(method & (HTTP_GET | HTTP_HEAD | HTTP_POST))
+//    if(method & (HTTP_GET | HTTP_HEAD | HTTP_POST))
 
     return 0;
 }
