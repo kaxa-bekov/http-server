@@ -31,8 +31,8 @@ int main(){
     init_server(&init_struct);
     
     int server_fd = init_struct.server_socket_fd;
-    struct sockaddr_in server_struct_address = init_struct.sockaddr_in_address;
-    socklen_t server_address_len = init_struct.server_address_length;
+    //struct sockaddr_in server_struct_address = init_struct.sockaddr_in_address;
+    //socklen_t server_address_len = init_struct.server_address_length;
 
 //------------------------------------------------------------------------\\
 
@@ -53,7 +53,7 @@ int main(){
         if(read_bytes < 0){ perror("Read Failure!\n"); return 1;}
 
         buff[read_bytes] = '\0';
-        printf("Read %d bytes.\nContent:\n%s\n", read_bytes, buff);
+        printf("Read %ld bytes.\nContent:\n%s\n", read_bytes, buff);
        
         //Calling parsing function 
         tokenizer(buff, &request_struct);
@@ -71,7 +71,7 @@ int main(){
         
         if(write_bytes < 0){perror("Write Failed!");return 1;}
 
-        printf("Wrote %d bytes.\nContent:\n%s", write_bytes, resp_buff);
+        printf("Wrote %ld bytes.\nContent:\n%s", write_bytes, resp_buff);
     
         //Nullifying the request struct
         str_nullifier(&request_struct);

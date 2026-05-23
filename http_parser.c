@@ -10,14 +10,12 @@ int tokenizer(char *request_str, request_s *reqstr){
     char *rem_buff = request_str;   //Traveling pointer
     char *rnrn;                     //New Line characters and an empty line check
     char *space;                    //Space
-    char *delim;                    //Colon delimiter
     char *empty_line;               //The empty line terminating the request
                                     
     //Finding the empty line
     empty_line = strstr(rem_buff, "\r\n\r\n");
     if(!empty_line) { empty_line = strstr(rem_buff, "\n\n"); }
     if(!empty_line || (strlen(empty_line) > 4)) { fprintf(stderr, "Missing or malformed empty line. Exiting!\n"); return 1; }
-    printf("Empty Line qaqa%sqaqa\n", empty_line);
     //Getting the first line (request line)
     char *req_line = rem_buff;   
     rnrn = strchr(rem_buff, '\n');
@@ -58,13 +56,15 @@ int tokenizer(char *request_str, request_s *reqstr){
     {
 
         rnrn = strchr(rem_buff, '\n');
-        if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL search for an '\\n' of the headers. (rem_buff:%s) \n", rem_buff); return 1;} //Fires when there is no newline char (LF or CRLF)
-                                                                                                                             //
+        if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL search for an '\\n' of the headers. (rem_buff:%s) \n", rem_buff); return 1;} 
+        //Fires when there is no newline char (LF or CRLF)
+        
+
         if(rnrn > rem_buff){
             if(*(rnrn - 1) != '\r'){  
                 *rnrn = 0;
             }else{
-                *(rnrn - 1), *rnrn = 0;            
+                *(rnrn - 1) = *rnrn = 0;            
             }
         }       
 
@@ -134,7 +134,6 @@ void disect_heads(char* rm_bf, request_s* req_s){
 
 void remove_spaces(char *buff){
     
-    printf("remove_spaces input: %s\n", buff);
     char *read = buff, *write = buff;
 
     while(*write){
@@ -144,9 +143,6 @@ void remove_spaces(char *buff){
         read++;
     }
     *write = '\0';
-
-    printf("remove_spaces output: %s\n", buff);
-    
 }
 
 
