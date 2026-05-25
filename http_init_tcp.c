@@ -12,9 +12,6 @@
 
 #include "http_init_tcp.h"
 
-#define PORT 2323
-
-
 //This function spins up a listening TCP server and hands it over to main.c where the while loop begins.
 
 int init_server(server_init_s* init_struct){

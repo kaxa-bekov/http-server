@@ -6,17 +6,32 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
+#include <limits.h>
 
 #include "http_parser.h"
 #include "http_init_tcp.h"
 #include "file_manipulations.h"
-#define PORT 2323
+#include "http_response_codes.h" //makefile
+                                 
 #define BUFFER_SIZE 1024
 
-request_s request_struct;
 server_init_s init_struct;
 
+//Web Root directory
+char web_root[PATH_MAX];
+const char *WEB_ROOT = web_root;
+
 int main(){
+    
+    //Request struct init
+    request_s request_struct;
+
+
+    //Initializing the Web Root direcotry
+    if(realpath("www", web_root) == NULL){
+        perror("WWW direcotory doesnt exist");
+        return 1;
+    }
 
     char buff[BUFFER_SIZE];
 
@@ -31,13 +46,10 @@ int main(){
     init_server(&init_struct);
     
     int server_fd = init_struct.server_socket_fd;
-    //struct sockaddr_in server_struct_address = init_struct.sockaddr_in_address;
-    //socklen_t server_address_len = init_struct.server_address_length;
 
-//------------------------------------------------------------------------\\
+/*------------------------------------------------------------------------*/
 
     while(true){
-
         printf("------------------------------Waiting for new connection--------------------------\n\n");    
 
         struct sockaddr_in client_address;
@@ -53,12 +65,15 @@ int main(){
         if(read_bytes < 0){ perror("Read Failure!\n"); return 1;}
 
         buff[read_bytes] = '\0';
-        printf("Read %ld bytes.\nContent:\n%s\n", read_bytes, buff);
+        printf("Read %ld bytes.\nContent:\n%s---------------------------\n", read_bytes, buff);
        
         //Calling parsing function 
         tokenizer(buff, &request_struct);
 
         printf("\nTokenizator output:\nMethod: %s\nPath: %s\nProtocol: %s\nHost: %s\nUser-Agent: %s\nAccept: %s\n\n\n", request_struct.method, request_struct.path, request_struct.proto, request_struct.headers.host, request_struct.headers.user_agent, request_struct.headers.accept);
+
+        //Testing file manipulations
+        validate_file(request_struct.path, conn_fd, WEB_ROOT);
 
         //Getting connection information
         char *host_ip = inet_ntoa(client_address.sin_addr);

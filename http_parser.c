@@ -47,18 +47,12 @@ int tokenizer(char *request_str, request_s *reqstr){
     reqstr->proto = req_line;
     if(strchr(req_line, ' ') != NULL) {fprintf(stderr, "Something went wrong, found too many spaces in the request line!\n");}
 
-
-
-
-    //TODO fix it so that this loop doesnt exit prematurely when hitting the last line.
     //Getting the remeaining lines
     while(true)
     {
-
         rnrn = strchr(rem_buff, '\n');
         if(rnrn == NULL){fprintf(stderr, "Character look up returned NULL search for an '\\n' of the headers. (rem_buff:%s) \n", rem_buff); return 1;} 
         //Fires when there is no newline char (LF or CRLF)
-        
 
         if(rnrn > rem_buff){
             if(*(rnrn - 1) != '\r'){  
@@ -71,17 +65,10 @@ int tokenizer(char *request_str, request_s *reqstr){
         //Populating the headers struct portion
         disect_heads(rem_buff, reqstr);
 
-
         if((rnrn + 1) >= empty_line) {break;}
 
         rem_buff = ++rnrn;
-
-
     }
-
-
-
-
     return 0;
     //End of Tokenizer
 }
@@ -95,7 +82,6 @@ void str_nullifier(request_s *req_s){
     req_s->headers.host = NULL;
     req_s->headers.user_agent = NULL;
     req_s->headers.accept = NULL;
-
 }
 
 void disect_heads(char* rm_bf, request_s* req_s){
@@ -144,6 +130,3 @@ void remove_spaces(char *buff){
     }
     *write = '\0';
 }
-
-
- 

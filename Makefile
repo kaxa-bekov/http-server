@@ -23,8 +23,11 @@ http_init_tcp.o: http_init_tcp.c http_init_tcp.h
 http_parser.o: http_parser.c http_parser.h
 	$(CC) $(CFLAGS) -c http_parser.c
 
-file_manipulations.o: file_manipulations.c file_manipulations.h
+file_manipulations.o: file_manipulations.c file_manipulations.h http_response_codes.h
 	$(CC) $(CFLAGS) -c file_manipulations.c
+
+http_response_codes.o: http_response_codes.c http_response_codes.h
+	$(CC) $(CFLAGS) -c http_response_codes.c
 
 #Cleaning
 clean:
