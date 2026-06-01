@@ -124,9 +124,5 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     response_str->content_type = content_type;
     response_str->response_code = r200_ok;
 
-
-
-
-
     return 0;
 }
