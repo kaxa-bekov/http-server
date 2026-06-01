@@ -1,8 +1,8 @@
 #Declare variables
 CC = gcc
 CFLAGS = -Wall -Wextra -g
-HFILES = http_parser.h http_init_tcp.h file_manipulations.h
-OFILES = http_parser.o http_init_tcp.o file_manipulations.o 
+HFILES = http_parser.h http_init_tcp.h file_manipulations.h http_response_codes.h
+OFILES = http_parser.o http_init_tcp.o file_manipulations.o http_response_codes.o
 
 #Declare phony targets
 .PHONY: all clean
@@ -24,7 +24,7 @@ http_parser.o: http_parser.c http_parser.h
 	$(CC) $(CFLAGS) -c http_parser.c
 
 file_manipulations.o: file_manipulations.c file_manipulations.h http_response_codes.h
-	$(CC) $(CFLAGS) -c file_manipulations.c
+	$(CC) $(CFLAGS) -c file_manipulations.c 
 
 http_response_codes.o: http_response_codes.c http_response_codes.h
 	$(CC) $(CFLAGS) -c http_response_codes.c

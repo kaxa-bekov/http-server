@@ -25,20 +25,18 @@ int main(){
     
     //Request struct init
     request_s request_struct;
+    //Response struct init
+    response_s response_struct;
 
-
-    //Initializing the Web Root direcotry
+    //Initializing the Web Root directory
     if(realpath("www", web_root) == NULL){
-        perror("WWW direcotory doesnt exist");
+        perror("WWW directory doesnt exist");
         return 1;
     }
 
     char buff[BUFFER_SIZE];
 
-    char resp_buff[] = "HTTP/1.0 200 OK\r\n"
-        "Server: sserver-c\r\n"
-        "Content-type: text/html\r\n\r\n"
-        "<html>hello, world!</html>\r\n";
+    char resp_buff[1024] = "Pending\r\n\r\n";
 
     size_t write_size = strlen(resp_buff);
 
@@ -72,8 +70,12 @@ int main(){
 
         printf("\nTokenizator output:\nMethod: %s\nPath: %s\nProtocol: %s\nHost: %s\nUser-Agent: %s\nAccept: %s\n\n\n", request_struct.method, request_struct.path, request_struct.proto, request_struct.headers.host, request_struct.headers.user_agent, request_struct.headers.accept);
 
-        //Testing file manipulations
-        validate_file(request_struct.path, conn_fd, WEB_ROOT);
+        //Validating the requested file
+        //TODO gracefully respond to return 1 and run the response_struct.response_code from here////////////////
+        int validation_result = validate_file(request_struct.path, WEB_ROOT, &response_struct);
+
+        //Running whatever the response was
+        response_struct.response_code(resp_buff);
 
         //Getting connection information
         char *host_ip = inet_ntoa(client_address.sin_addr);
