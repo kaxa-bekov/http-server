@@ -1,6 +1,8 @@
 #ifndef HTTP_PARSER_H
 #define HTTP_PARSER_H
 
+#include "http_response_codes.h"
+
 //Declaring the needed types and functions
 
 typedef struct {
@@ -16,7 +18,7 @@ typedef struct {
     headers_s headers;
 } request_s;
 
-int tokenizer(char *request_string, request_s* request_struct);
+int tokenizer(char *request_string, request_s* request_struct, response_s *response_struct);
 
 void str_nullifier(request_s *request_struct);
 

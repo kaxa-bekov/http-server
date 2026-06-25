@@ -3,7 +3,6 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <errno.h>
 #include "file_manipulations.h"
 #include "http_response_codes.h"
 
@@ -25,7 +24,7 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     if(result >= (int)sizeof(full_path)) {
         //Means we received a malicious request (super long)
         perror("Request is too long");
-        response_str->response_code = r414_uri_too_long;
+        //response_str->response_code = r414_uri_too_long;
         return 1;
     }
 
@@ -38,12 +37,12 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     if(realpath(full_path, resolved_path) == NULL){
         //File does not exist
         perror("File does not exist");
-        response_str->response_code = r404_not_found;
+        //response_str->response_code = r404_not_found;
         return 1;
     }else if(strncmp(resolved_path, WEB_ROOT, strlen(WEB_ROOT) != 0)){
         //Directory traversal attempted
         fprintf(stderr, "Directory Traversal Attempted! Aborting!\n");
-        response_str->response_code = r400_bad_request;
+        //response_str->response_code = r400_bad_request;
         return 1;
     }
 
@@ -55,7 +54,7 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     if(stat(resolved_path, &file_stat) != 0) {
         // stat() failed. Most likely doesnt have the permissions
         perror( "Stat failed due to permission deny"); 
-        response_str->response_code = r403_forbidden;
+        //response_str->response_code = r403_forbidden;
         return 1; 
     }
 
@@ -101,28 +100,23 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
           {"json", "application/json"},
     };
     //Size and Mime Type
-    size_t content_length = file_stat.st_size;
-    char content_type[32];
+    response_str->content_length = file_stat.st_size;
   
     int array_len = sizeof(mime_types)/sizeof(mime_types[0]);
   
     for(int i = 0; i < array_len; i++){
           if(strcmp(extension, mime_types[i].extension) == 0){
-          strncpy(content_type, mime_types[i].type, sizeof(content_type))    ;        
+          strncpy(response_str->content_type, mime_types[i].type, sizeof(mime_types[i].type))    ;        
           }
     }
   
       
-    printf("Content-Length: %ld\n", content_length);
     printf("Extension: %s\n", extension);
-    printf("Content-Type: %s\n", content_type);
 
 
 
     //Populating the response struct
-    response_str->content_length = content_length;
-    response_str->content_type = content_type;
-    response_str->response_code = r200_ok;
+    //response_str->response_code = r200_ok;
 
     return 0;
 }
