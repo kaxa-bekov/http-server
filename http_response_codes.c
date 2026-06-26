@@ -1,6 +1,7 @@
+#include "http_response_codes.h"
+
 #include <stdio.h>   //Might remove after test how many bytes
 #include <string.h>  //Might need for snprintf ing the 200 ok headers
-#include "http_response_codes.h"
 
 int r200_ok(response_s *response_struct){
     //Return 200 OK respose
@@ -8,7 +9,7 @@ int r200_ok(response_s *response_struct){
 }  
 
 int r400_bad_request(response_s *response_struct){
-    response_struct->resp_buf = "HTTP/1.1 400 Bad Request\r\n"
+    strncpy(response_struct->resp_buf, "HTTP/1.1 400 Bad Request\r\n"
         "Content-Type: text/html\r\n"
         "Content-Length: 135\r\n"
         "\r\n"
@@ -16,11 +17,15 @@ int r400_bad_request(response_s *response_struct){
         "<html>"
         "<head><title>400 bad Request</title></head>"
         "<body><h1>400 Bad Request</h1></body>"
-        "</html>";
+        "</html>",
+    200);
+    response_struct->resp_buf[200] = '\0';
 	response_struct->content_length = strlen(response_struct->resp_buf);
-	response_struct->content_type = "text/html";
+	strncpy(response_struct->content_type, "text/html", 10);
+    response_struct->content_type[9] = '\0';
     return 0;
 }
+/*
 int r403_forbidden(response_s *response_struct){
     response_struct->resp_buf = "HTTP/1.1 403 Forbidden\r\n"
         "Content-Type: text/html\r\n"
@@ -32,7 +37,7 @@ int r403_forbidden(response_s *response_struct){
         "<body><h1>403 Forbidden</h1></body>"
         "</html>";
 	response_struct->content_length = strlen(response_struct->resp_buf);
-	response_struct->content_type = "text/html";
+	response_struct->content_type = "text/html"; 
     return 0;
 }                                      
 int r404_not_found(response_s *response_struct){
@@ -91,3 +96,4 @@ int r500_internal_server_error(response_s *response_struct){
 	response_struct->content_type = "text/html";
     return 0;
 }
+*/

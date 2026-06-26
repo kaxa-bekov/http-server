@@ -1,10 +1,12 @@
 #ifndef HTTP_RESPONSE_CODES
 #define HTTP_RESPONSE_CODES
-//Might include stddef.h just for the size_t type if remove other headers from the source file
+
+#include <stddef.h>
+
 typedef struct {
-    char *resp_buf;
+    char resp_buf[4096];
     size_t content_length;
-    char* content_type;
+    char content_type[32];
 } response_s;
 
 int r200_ok(response_s *response_struct);

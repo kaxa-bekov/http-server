@@ -57,7 +57,7 @@ int tokenizer(char *request_str, request_s *request_struct, response_s *response
         }
     }
     
-    printf("Num of spaces: %d", num_spaces);
+    printf("Num of spaces: %d\n", num_spaces);
 
     if(num_spaces != 2){
         fprintf(stderr, "Wrong number of spaces.\n");

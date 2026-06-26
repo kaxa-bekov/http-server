@@ -1,10 +1,10 @@
+#include "file_manipulations.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include "file_manipulations.h"
-#include "http_response_codes.h"
 
 
 
@@ -82,6 +82,8 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     char* last_dot = strrchr(resolved_path, '.');
     strncpy(extension, ++last_dot, sizeof(extension));
   
+
+
     //Mapping the extension to a MIME type
     struct MimeType{
            const char* extension;
@@ -99,21 +101,24 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
           {"gif", "image/gif"},
           {"json", "application/json"},
     };
+
+    printf("TEST1\n");
     //Size and Mime Type
     response_str->content_length = file_stat.st_size;
-  
+
     int array_len = sizeof(mime_types)/sizeof(mime_types[0]);
-  
+
+    printf("TEST1.1\n");
     for(int i = 0; i < array_len; i++){
           if(strcmp(extension, mime_types[i].extension) == 0){
-          strncpy(response_str->content_type, mime_types[i].type, sizeof(mime_types[i].type))    ;        
+            strncpy(response_str->content_type, mime_types[i].type, sizeof response_str->content_type - 1);
+            response_str->content_type[sizeof response_str->content_type] = '\0';
           }
     }
-  
+ 
+    printf("TEST2\n");
       
     printf("Extension: %s\n", extension);
-
-
 
     //Populating the response struct
     //response_str->response_code = r200_ok;

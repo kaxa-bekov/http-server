@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <sys/socket.h>
-#include <errno.h>
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,8 +7,8 @@
 #include <string.h>
 #include <limits.h>
 
-#include "http_parser.h"
 #include "http_init_tcp.h"
+#include "http_parser.h"
 #include "file_manipulations.h"
 #include "http_response_codes.h" //makefile
                                  
@@ -26,8 +25,7 @@ int main(){
     //Request struct init
     request_s request_struct;
     //Response struct init
-    response_s response_struct; //Used for 200 Ok only
-
+    response_s response_struct;
     //Initializing the Web Root directory
     if(realpath("www", web_root) == NULL){
         perror("WWW directory doesnt exist");
@@ -35,9 +33,6 @@ int main(){
     }
 
     char req_buff[BUFFER_SIZE + 1];
-
-    size_t write_size = response_struct.content_length;
-
     //Initializing a TCP server
     init_server(&init_struct);
     
@@ -71,6 +66,7 @@ int main(){
                 perror("Writing bad response failed.\n");
                 return 1;
             }
+            close(conn_fd);
             continue;
         }
 
@@ -78,26 +74,35 @@ int main(){
 
         //Validating the requested file
         int validation_result = validate_file(request_struct.path, WEB_ROOT, &response_struct);
+        if(validation_result == 1){
+            if(write(conn_fd, response_struct.resp_buf, response_struct.content_length) == -1){
+                perror("Writing bad response failed.\n");
+                return 1;
+            }
+            close(conn_fd);
+            continue;
+        }
 
         //Getting connection information
         char *host_ip = inet_ntoa(client_address.sin_addr);
         unsigned int host_port = ntohs(client_address.sin_port);
 
         printf("Connected to host %s on port %u\n", host_ip, host_port);
-
+        printf("resp_buf right befro writing to conn_fd is: %s\nAnd the content_length is: %ld\n", response_struct.resp_buf, response_struct.content_length);
         //Writing a response
-        ssize_t write_bytes = write(conn_fd, response_struct.resp_buf, write_size);
+        ssize_t write_bytes = write(conn_fd, response_struct.resp_buf, response_struct.content_length);
         
         if(write_bytes < 0){perror("Write Failed!");return 1;}
 
         printf("Wrote %ld bytes.\nContent:\n%s", write_bytes, response_struct.resp_buf);
     
-        //Nullifying the request struct
+        //Nullifying the request & response struct
         str_nullifier(&request_struct);
 
         //Close the socket and free the request buffer
         close(conn_fd);
     }
+/*--------------------------------------------------------------------*/
 
     close(server_fd);
     return 0;
