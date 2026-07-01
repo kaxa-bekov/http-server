@@ -102,13 +102,10 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
           {"json", "application/json"},
     };
 
-    printf("TEST1\n");
     //Size and Mime Type
     response_str->content_length = file_stat.st_size;
 
     int array_len = sizeof(mime_types)/sizeof(mime_types[0]);
-
-    printf("TEST1.1\n");
     for(int i = 0; i < array_len; i++){
           if(strcmp(extension, mime_types[i].extension) == 0){
             strncpy(response_str->content_type, mime_types[i].type, sizeof response_str->content_type - 1);
@@ -116,12 +113,7 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
           }
     }
  
-    printf("TEST2\n");
-      
-    printf("Extension: %s\n", extension);
-
     //Populating the response struct
-    //response_str->response_code = r200_ok;
-
+    r200_ok(response_str);
     return 0;
 }

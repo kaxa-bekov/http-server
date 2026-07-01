@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <limits.h>
+#include <fcntl.h>
 
 #include "http_init_tcp.h"
 #include "http_parser.h"
@@ -88,13 +89,24 @@ int main(){
         unsigned int host_port = ntohs(client_address.sin_port);
 
         printf("Connected to host %s on port %u\n", host_ip, host_port);
-        printf("resp_buf right befro writing to conn_fd is: %s\nAnd the content_length is: %ld\n", response_struct.resp_buf, response_struct.content_length);
+
+        printf("resp_buf right before writing to conn_fd is: %s\nAnd the content_length is: %ld\n", response_struct.resp_buf, response_struct.content_length);
         //Writing a response
         ssize_t write_bytes = write(conn_fd, response_struct.resp_buf, response_struct.content_length);
         
+        printf("The filename after the validation is: %s", request_struct.path);
+    
+        int file_D = open(request_struct.path, O_RDONLY);
+
+        if(file_D == -1){fprintf(stderr, "File could not be opened!\n"); return 1;}
+        
+        lseek(file_D, 0, SEEK_SET);
+
+        //CREATE A BUFFER, READ FROM THE FILE AND WRITE TO CONN_FD
+
         if(write_bytes < 0){perror("Write Failed!");return 1;}
 
-        printf("Wrote %ld bytes.\nContent:\n%s", write_bytes, response_struct.resp_buf);
+        printf("Wrote %ld bytes.\nContent:\n%s\n", write_bytes, response_struct.resp_buf);
     
         //Nullifying the request & response struct
         str_nullifier(&request_struct);
