@@ -13,7 +13,7 @@ int r200_ok(response_s *response_struct){
         "<html>"
         "<head><title>200 OK</title></head>"
         "<body><h1>200 OK</h1></body>"
-        "</html>", response_struct->content_type, response_struct->content_length);
+        "</html>", response_struct->content_type, (long)response_struct->content_length);
     return 0;
 }  
 

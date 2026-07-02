@@ -33,6 +33,9 @@ int main(){
         return 1;
     }
 
+
+    //TODO Create a dedicated pathname buffer to write to from file_manipulations. Do not write anything to the original request line
+
     char req_buff[BUFFER_SIZE + 1];
     //Initializing a TCP server
     init_server(&init_struct);
@@ -91,25 +94,32 @@ int main(){
         printf("Connected to host %s on port %u\n", host_ip, host_port);
 
         printf("resp_buf right before writing to conn_fd is: %s\nAnd the content_length is: %ld\n", response_struct.resp_buf, response_struct.content_length);
-        //Writing a response
-        ssize_t write_bytes = write(conn_fd, response_struct.resp_buf, response_struct.content_length);
+        //Writing a response and headers
+        ssize_t write_bytes = write(conn_fd, response_struct.resp_buf, strlen(response_struct.resp_buf));
         
-        printf("The filename after the validation is: %s", request_struct.path);
-    
+        if(write_bytes < 0){perror("Write Failed!");return 1;}
+
+        printf("Wrote %ld bytes of response_buf.\nContent:\n%s\n", strlen(response_struct.resp_buf), response_struct.resp_buf);
+
+        printf("The filename after the validation is: %s\n", request_struct.path);
+        printf("Protocol: %s\n", request_struct.proto);
+
         int file_D = open(request_struct.path, O_RDONLY);
 
         if(file_D == -1){fprintf(stderr, "File could not be opened!\n"); return 1;}
         
         lseek(file_D, 0, SEEK_SET);
 
-        //CREATE A BUFFER, READ FROM THE FILE AND WRITE TO CONN_FD
+        char file_buffer[4096];
 
-        if(write_bytes < 0){perror("Write Failed!");return 1;}
+        ssize_t file_read_bytes = read(file_D, file_buffer, 4096);
 
-        printf("Wrote %ld bytes.\nContent:\n%s\n", write_bytes, response_struct.resp_buf);
+        ssize_t file_write_bytes = write(conn_fd, file_buffer, file_read_bytes);
+
+
     
         //Nullifying the request & response struct
-        str_nullifier(&request_struct);
+        //str_nullifier(&request_struct);
 
         //Close the socket and free the request buffer
         close(conn_fd);

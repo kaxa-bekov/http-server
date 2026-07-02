@@ -8,11 +8,16 @@
 
 
 
-int validate_file(const char *filename, const char *WEB_ROOT, response_s* response_str){
+int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str){
    
     //Default path
     if(strcmp(filename, "/") == 0) {
-        filename = "/index.html";
+        strncpy(filename,"/index.html", 11);
+        filename[11] = '\0';
+    }else if(strncmp(filename, "/", 1) != 0){
+        r400_bad_request(response_str);
+        fprintf(stderr, "The reaquested path does not start with a '/'. Exiting.\n");
+        return 1;
     }
 
     //1. snprintf() and 414
@@ -23,8 +28,8 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     int result = snprintf(full_path, sizeof(full_path),"www%s", filename);
     if(result >= (int)sizeof(full_path)) {
         //Means we received a malicious request (super long)
-        perror("Request is too long");
-        //response_str->response_code = r414_uri_too_long;
+        perror("Request is too long\n");
+        r414_uri_too_long(response_str);
         return 1;
     }
 
@@ -37,14 +42,15 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     if(realpath(full_path, resolved_path) == NULL){
         //File does not exist
         perror("File does not exist");
-        //response_str->response_code = r404_not_found;
+        r404_not_found(response_str);
         return 1;
     }else if(strncmp(resolved_path, WEB_ROOT, strlen(WEB_ROOT) != 0)){
         //Directory traversal attempted
         fprintf(stderr, "Directory Traversal Attempted! Aborting!\n");
-        //response_str->response_code = r400_bad_request;
+        r400_bad_request(response_str);
         return 1;
     }
+
 
     //3. stat() and 403 or 200_ok
    
@@ -54,7 +60,7 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     if(stat(resolved_path, &file_stat) != 0) {
         // stat() failed. Most likely doesnt have the permissions
         perror( "Stat failed due to permission deny"); 
-        //response_str->response_code = r403_forbidden;
+        r403_forbidden(response_str);
         return 1; 
     }
 
@@ -62,27 +68,25 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     //We check whether its a file or directory and then extract Content-Type and Content-Length.
 
     if(!S_ISREG(file_stat.st_mode)){
-        //r404_not_found(client);
+        r404_not_found(response_str);
         fprintf(stderr, "Not Found\n");
     }else if(S_ISDIR(file_stat.st_mode)){
         //Is Directory. Forbidden
-        //r403_forbidden(client);
+        r403_forbidden(response_str);
         fprintf(stderr, "Trying to request a Directory.\n");
     }
 
     //File is valid and we can extract metadata for headers
     printf("file type and mode: %o\n File size is: %ld\n", file_stat.st_mode, (long)file_stat.st_size );
 
-    printf("'/' path resolves to %s\n", filename);
-
-
     //Reading the extension of the file requested                      
     char extension[16];
  
     char* last_dot = strrchr(resolved_path, '.');
-    strncpy(extension, ++last_dot, sizeof(extension));
+    strncpy(extension, ++last_dot, sizeof(extension) - 1);
+    extension[16] = '\0';
   
-
+    printf("RealPath is: %s\n", resolved_path);
 
     //Mapping the extension to a MIME type
     struct MimeType{
@@ -114,6 +118,13 @@ int validate_file(const char *filename, const char *WEB_ROOT, response_s* respon
     }
  
     //Populating the response struct
+    strncpy(filename, resolved_path, PATH_MAX - 1);
+    filename[PATH_MAX-1] = '\0';
+    printf("file_manipulations : resp_buf after filename strcpy is: %s\n", response_str->resp_buf);
+
+    printf("file_manipulations : resp_buf before r200_ok is: %s\n", response_str->resp_buf);
     r200_ok(response_str);
+    printf("file_manipulations : resp_buf after r200_ok is: %s\n", response_str->resp_buf);
+
     return 0;
 }
