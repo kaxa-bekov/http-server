@@ -20,8 +20,6 @@ typedef struct {
 
 int tokenizer(char *request_string, request_s* request_struct, response_s *response_struct);
 
-void str_nullifier(request_s *request_struct);
-
 void disect_heads(char* remaining_buffer, request_s* request_struct, response_s * response_struct);
 
 void remove_spaces(char *buffer);

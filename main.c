@@ -1,12 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <limits.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdbool.h>
-#include <string.h>
-#include <limits.h>
-#include <fcntl.h>
 
 #include "http_init_tcp.h"
 #include "http_parser.h"
@@ -63,7 +63,7 @@ int main(){
         printf("Read %ld bytes.\nContent:\n%s-\n--------------------------\n", read_bytes, req_buff);
        
         //Calling parsing function 
-        int token = tokenizer(req_buff, &request_struct, &response_struct); //Might need a return tokenizer result
+        int token = tokenizer(req_buff, &request_struct, &response_struct);
         
         if(token == 1){
             if(write(conn_fd, response_struct.resp_buf, response_struct.content_length) == -1){
@@ -102,7 +102,8 @@ int main(){
         printf("Wrote %ld bytes of response_buf.\nContent:\n%s\n", strlen(response_struct.resp_buf), response_struct.resp_buf);
 
         printf("The filename after the validation is: %s\n", request_struct.path);
-        printf("Protocol: %s\n", request_struct.proto);
+        printf("Protocol: %s\n", request_struct.proto);  //THIS IS WHERE IT OVERWRITES THE ORIGINAL REQ_LINE.
+
 
         int file_D = open(request_struct.path, O_RDONLY);
 
@@ -116,10 +117,6 @@ int main(){
 
         ssize_t file_write_bytes = write(conn_fd, file_buffer, file_read_bytes);
 
-
-    
-        //Nullifying the request & response struct
-        //str_nullifier(&request_struct);
 
         //Close the socket and free the request buffer
         close(conn_fd);

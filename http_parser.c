@@ -114,17 +114,6 @@ int tokenizer(char *request_str, request_s *request_struct, response_s *response
     //End of Tokenizer
 }
 
-//struct nullifier  helper function definition
-void str_nullifier(request_s *req_s){
-
-    req_s->method = NULL;
-    req_s->path = NULL;
-    req_s->proto = NULL;
-    req_s->headers.host = NULL;
-    req_s->headers.user_agent = NULL;
-    req_s->headers.accept = NULL;
-}
-
 void disect_heads(char* rm_bf, request_s *req_s, response_s *resp_s){
     
     char *headers[] = {"host", "user-agent", "accept"};

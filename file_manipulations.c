@@ -13,10 +13,10 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
     //Default path
     if(strcmp(filename, "/") == 0) {
         strncpy(filename,"/index.html", 11);
-        filename[11] = '\0';
+        filename[11] = '\0'; //Overwriting the original request line BAD DESIGN. CHANGE
     }else if(strncmp(filename, "/", 1) != 0){
         r400_bad_request(response_str);
-        fprintf(stderr, "The reaquested path does not start with a '/'. Exiting.\n");
+        fprintf(stderr, "The requested path does not start with a '/'. Exiting.\n");
         return 1;
     }
 
@@ -25,7 +25,7 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
     //Whatever the filename is - we want to set our Server Directory to www/
     char full_path[512];
 
-    int result = snprintf(full_path, sizeof(full_path),"www%s", filename);
+    int result = snprintf(full_path, sizeof(full_path),"%s%s", WEB_ROOT, filename); //AGAIN USING THE ORIGINAL REQ_LINE (FILENAME) (going to use WEB_ROOT var)
     if(result >= (int)sizeof(full_path)) {
         //Means we received a malicious request (super long)
         perror("Request is too long\n");
@@ -68,16 +68,18 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
     //We check whether its a file or directory and then extract Content-Type and Content-Length.
 
     if(!S_ISREG(file_stat.st_mode)){
-        r404_not_found(response_str);
         fprintf(stderr, "Not Found\n");
+        r404_not_found(response_str);
+        return 1;
     }else if(S_ISDIR(file_stat.st_mode)){
         //Is Directory. Forbidden
-        r403_forbidden(response_str);
         fprintf(stderr, "Trying to request a Directory.\n");
+        r403_forbidden(response_str);
+        return 1;
     }
 
     //File is valid and we can extract metadata for headers
-    printf("file type and mode: %o\n File size is: %ld\n", file_stat.st_mode, (long)file_stat.st_size );
+    printf("file type and mode: %o\nFile size is: %ld\n", file_stat.st_mode, (long)file_stat.st_size );
 
     //Reading the extension of the file requested                      
     char extension[16];
@@ -118,13 +120,12 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
     }
  
     //Populating the response struct
-    strncpy(filename, resolved_path, PATH_MAX - 1);
+    strncpy(filename, resolved_path, PATH_MAX - 1); //AGAIN WRITING TO THE ORIGINAL REQUEST LINE
     filename[PATH_MAX-1] = '\0';
-    printf("file_manipulations : resp_buf after filename strcpy is: %s\n", response_str->resp_buf);
+    
+    printf("filename is: %s", filename);
 
-    printf("file_manipulations : resp_buf before r200_ok is: %s\n", response_str->resp_buf);
     r200_ok(response_str);
-    printf("file_manipulations : resp_buf after r200_ok is: %s\n", response_str->resp_buf);
 
     return 0;
 }
