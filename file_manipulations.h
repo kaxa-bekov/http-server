@@ -3,6 +3,6 @@
 
 #include "http_response_codes.h"
 
-int validate_file(char* filename, const char* WEB_ROOT, response_s* response_str);
+int validate_file(char* val_path, const char* WEB_ROOT, response_s* response_str);
 
 #endif //FILE_MANIPULATIONS_H included

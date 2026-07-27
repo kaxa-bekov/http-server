@@ -8,13 +8,13 @@
 
 
 
-int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str){
-   
+int validate_file(char* valid_path, const char *WEB_ROOT, response_s* response_str){
+  
     //Default path
-    if(strcmp(filename, "/") == 0) {
-        strncpy(filename,"/index.html", 11);
-        filename[11] = '\0'; //Overwriting the original request line BAD DESIGN. CHANGE
-    }else if(strncmp(filename, "/", 1) != 0){
+    if(strcmp(valid_path, "/") == 0) {
+        strncpy(valid_path,"/index.html", 11);
+        valid_path[11] = '\0';
+    }else if(strncmp(valid_path, "/", 1) != 0){
         r400_bad_request(response_str);
         fprintf(stderr, "The requested path does not start with a '/'. Exiting.\n");
         return 1;
@@ -25,7 +25,7 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
     //Whatever the filename is - we want to set our Server Directory to www/
     char full_path[512];
 
-    int result = snprintf(full_path, sizeof(full_path),"%s%s", WEB_ROOT, filename); //AGAIN USING THE ORIGINAL REQ_LINE (FILENAME) (going to use WEB_ROOT var)
+    int result = snprintf(full_path, sizeof(full_path),"%s%s", WEB_ROOT, valid_path);
     if(result >= (int)sizeof(full_path)) {
         //Means we received a malicious request (super long)
         perror("Request is too long\n");
@@ -44,13 +44,15 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
         perror("File does not exist");
         r404_not_found(response_str);
         return 1;
-    }else if(strncmp(resolved_path, WEB_ROOT, strlen(WEB_ROOT) != 0)){
+    }else if(strncmp(resolved_path, WEB_ROOT, strlen(WEB_ROOT)) != 0){
         //Directory traversal attempted
         fprintf(stderr, "Directory Traversal Attempted! Aborting!\n");
         r400_bad_request(response_str);
         return 1;
     }
 
+    printf("Resolved path (after realpath()) : %s\n", resolved_path);
+    printf("WEB_ROOT : %s\n", WEB_ROOT);
 
     //3. stat() and 403 or 200_ok
    
@@ -88,8 +90,6 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
     strncpy(extension, ++last_dot, sizeof(extension) - 1);
     extension[16] = '\0';
   
-    printf("RealPath is: %s\n", resolved_path);
-
     //Mapping the extension to a MIME type
     struct MimeType{
            const char* extension;
@@ -120,11 +120,9 @@ int validate_file(char *filename, const char *WEB_ROOT, response_s* response_str
     }
  
     //Populating the response struct
-    strncpy(filename, resolved_path, PATH_MAX - 1); //AGAIN WRITING TO THE ORIGINAL REQUEST LINE
-    filename[PATH_MAX-1] = '\0';
+    strncpy(valid_path, resolved_path, 511);
+    valid_path[511] = '\0';
     
-    printf("filename is: %s", filename);
-
     r200_ok(response_str);
 
     return 0;

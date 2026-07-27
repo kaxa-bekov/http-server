@@ -14,6 +14,7 @@ typedef struct {
 typedef struct {
     char *method;
     char *path;
+    char validated_path[512];
     char *proto;
     headers_s headers;
 } request_s;

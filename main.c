@@ -33,9 +33,6 @@ int main(){
         return 1;
     }
 
-
-    //TODO Create a dedicated pathname buffer to write to from file_manipulations. Do not write anything to the original request line
-
     char req_buff[BUFFER_SIZE + 1];
     //Initializing a TCP server
     init_server(&init_struct);
@@ -75,9 +72,13 @@ int main(){
         }
 
         printf("\nTokenizator output:\nMethod: %s\nPath: %s\nProtocol: %s\nHost: %s\nUser-Agent: %s\nAccept: %s\n\n\n", request_struct.method, request_struct.path, request_struct.proto, request_struct.headers.host, request_struct.headers.user_agent, request_struct.headers.accept);
+        
+        
+        //Writing the path to a dedicated buffer to be able to modify it.
+        strncpy(request_struct.validated_path, request_struct.path, 512); 
 
         //Validating the requested file
-        int validation_result = validate_file(request_struct.path, WEB_ROOT, &response_struct);
+        int validation_result = validate_file(request_struct.validated_path, WEB_ROOT, &response_struct);
         if(validation_result == 1){
             if(write(conn_fd, response_struct.resp_buf, response_struct.content_length) == -1){
                 perror("Writing bad response failed.\n");
@@ -91,34 +92,26 @@ int main(){
         char *host_ip = inet_ntoa(client_address.sin_addr);
         unsigned int host_port = ntohs(client_address.sin_port);
 
-        printf("Connected to host %s on port %u\n", host_ip, host_port);
+        printf("\nConnected to host %s on port %u\n", host_ip, host_port);
 
-        printf("resp_buf right before writing to conn_fd is: %s\nAnd the content_length is: %ld\n", response_struct.resp_buf, response_struct.content_length);
         //Writing a response and headers
         ssize_t write_bytes = write(conn_fd, response_struct.resp_buf, strlen(response_struct.resp_buf));
         
         if(write_bytes < 0){perror("Write Failed!");return 1;}
 
-        printf("Wrote %ld bytes of response_buf.\nContent:\n%s\n", strlen(response_struct.resp_buf), response_struct.resp_buf);
-
-        printf("The filename after the validation is: %s\n", request_struct.path);
-        printf("Protocol: %s\n", request_struct.proto);  //THIS IS WHERE IT OVERWRITES THE ORIGINAL REQ_LINE.
-
-
-        int file_D = open(request_struct.path, O_RDONLY);
+        //Opening the requested file and writing its content to the client_fd
+        int file_D = open(request_struct.validated_path, O_RDONLY);
 
         if(file_D == -1){fprintf(stderr, "File could not be opened!\n"); return 1;}
         
         lseek(file_D, 0, SEEK_SET);
 
-        char file_buffer[4096];
+        ssize_t file_read_bytes = read(file_D, response_struct.resp_buf, sizeof response_struct.resp_buf);
 
-        ssize_t file_read_bytes = read(file_D, file_buffer, 4096);
-
-        ssize_t file_write_bytes = write(conn_fd, file_buffer, file_read_bytes);
+        ssize_t file_write_bytes = write(conn_fd, response_struct.resp_buf, file_read_bytes);
 
 
-        //Close the socket and free the request buffer
+        //Close the client socket
         close(conn_fd);
     }
 /*--------------------------------------------------------------------*/

@@ -5,15 +5,10 @@
 
 int r200_ok(response_s *response_struct){
     //Return 200 OK respose
-    snprintf(response_struct->resp_buf, 200, "HTTP/1.1 200 OK\r\n"
+    snprintf(response_struct->resp_buf, 100, "HTTP/1.1 200 OK\r\n"
         "Content-Type: %s\r\n"
         "Content-Length: %ld\r\n"
-        "\r\n"
-        "<!DOCTYPE html>"
-        "<html>"
-        "<head><title>200 OK</title></head>"
-        "<body><h1>200 OK</h1></body>"
-        "</html>", response_struct->content_type, (long)response_struct->content_length);
+        "\r\n", response_struct->content_type, (long)response_struct->content_length);
     return 0;
 }  
 
